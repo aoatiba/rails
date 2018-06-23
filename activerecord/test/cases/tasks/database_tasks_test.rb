@@ -827,6 +827,42 @@ module ActiveRecord
     end
   end
 
+  class DatabaseTaskCheckTargetVersionsTest < ActiveRecord::TestCase
+    def test_check_target_versions_does_not_raise_error_on_empty_version
+      versions = ENV["VERSIONS"]
+      ENV["VERSIONS"] = ""
+      assert_nothing_raised { ActiveRecord::Tasks::DatabaseTasks.check_target_versions }
+    ensure
+      ENV["VERSIONS"] = versions
+    end
+
+    def test_check_target_versions_does_not_raise_error_if_version_is_not_set
+      versions = ENV.delete("VERSIONS")
+      assert_nothing_raised { ActiveRecord::Tasks::DatabaseTasks.check_target_versions }
+    ensure
+      ENV["VERSIONS"] = versions
+    end
+
+    def test_check_target_versions_does_not_raise_error_on_valid_version_format
+      versions = ENV["VERSIONS"]
+
+      ENV["VERSIONS"] = "0,1"
+      assert_nothing_raised { ActiveRecord::Tasks::DatabaseTasks.check_target_versions }
+    ensure
+      ENV["VERSIONS"] = versions
+    end
+
+    def test_check_target_versions_raises_error_on_invalid_version_format
+      versions = ENV["VERSIONS"]
+
+      ENV["VERSIONS"] = "0,1_"
+      e = assert_raise(RuntimeError) { ActiveRecord::Tasks::DatabaseTasks.check_target_versions }
+      assert_match(/Invalid format of target version/, e.message)
+    ensure
+      ENV["VERSIONS"] = versions
+    end
+  end
+
   class DatabaseTasksStructureDumpTest < ActiveRecord::TestCase
     include DatabaseTasksSetupper
 

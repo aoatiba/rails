@@ -188,14 +188,32 @@ module ActiveRecord
         Migration.verbose = verbose_was
       end
 
-      def check_target_version
-        if target_version && !(Migration::MigrationFilenameRegexp.match?(ENV["VERSION"]) || /\A\d+\z/.match?(ENV["VERSION"]))
-          raise "Invalid format of target version: `VERSION=#{ENV['VERSION']}`"
+      def check_target_version(version=ENV["VERSION"])
+        if version.present?  && !(Migration::MigrationFilenameRegexp.match?(version) || /\A\d+\z/.match?(version))
+          raise "Invalid format of target version: `VERSIONS=#{version}`"
+        end
+      end
+
+      def check_target_versions
+        if target_versions.present?
+          versions = ENV["VERSIONS"].split(",")
+
+          versions.each do |version|
+            check_target_version(version)
+          end
         end
       end
 
       def target_version
         ENV["VERSION"].to_i if ENV["VERSION"] && !ENV["VERSION"].empty?
+      end
+
+      def target_versions
+        if ENV["VERSIONS"] && !ENV["VERSIONS"].empty?
+          ENV["VERSIONS"].split(",").map(&:to_i)
+        else
+          []
+        end
       end
 
       def charset_current(environment = env)

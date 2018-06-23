@@ -105,11 +105,11 @@ db_namespace = namespace :db do
       end
     end
 
-    # desc  'Rollbacks the database one migration and re migrate up (options: STEP=x, VERSION=x).'
+    # desc  'Rollbacks the database one migration and re migrate up (options: STEP=x, VERSIONS=x).'
     task redo: :load_config do
-      raise "Empty VERSION provided" if ENV["VERSION"] && ENV["VERSION"].empty?
+      raise "Empty VERSIONS environment variable provided" if ENV["VERSIONS"] && ENV["VERSIONS"].empty?
 
-      if ENV["VERSION"]
+      if ENV["VERSIONS"]
         db_namespace["migrate:down"].invoke
         db_namespace["migrate:up"].invoke
       else
@@ -121,9 +121,9 @@ db_namespace = namespace :db do
     # desc 'Resets your database using your migrations for the current environment'
     task reset: ["db:drop", "db:create", "db:migrate"]
 
-    # desc 'Runs the "up" for a given migration VERSION.'
+    # desc 'Runs the "up" for given migration VERSIONS.'
     task up: :load_config do
-      raise "VERSION is required" if !ENV["VERSION"] || ENV["VERSION"].empty?
+      raise "VERSIONS environment variable is required" if !ENV["VERSIONS"] || ENV["VERSIONS"].empty?
 
       ActiveRecord::Tasks::DatabaseTasks.check_target_version
 
@@ -134,9 +134,9 @@ db_namespace = namespace :db do
       db_namespace["_dump"].invoke
     end
 
-    # desc 'Runs the "down" for a given migration VERSION.'
+    # desc 'Runs the "down" for given migration VERSIONS.'
     task down: :load_config do
-      raise "VERSION is required - To go down one migration, use db:rollback" if !ENV["VERSION"] || ENV["VERSION"].empty?
+      raise "VERSIONS environment variable is required - To go down one migration, use db:rollback" if !ENV["VERSIONS"] || ENV["VERSIONS"].empty?
 
       ActiveRecord::Tasks::DatabaseTasks.check_target_version
 
